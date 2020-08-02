@@ -56,6 +56,12 @@ function Bird(id, pos, vel) {
             if (this.pos.y > height) {
                 this.pos.y = 0;
             }
+            if (this.pos.z < 0) {
+                this.pos.z = depth;
+            }
+            if (this.pos.z > depth) {
+                this.pos.z = 0;
+            }
             return steering;
         }
 
@@ -71,6 +77,12 @@ function Bird(id, pos, vel) {
         }
         if (this.pos.y > height - boidsSettings.BORDER_LIMIT) {
             this.vel.y = -abs(this.vel.y);
+        }
+        if (this.pos.z < boidsSettings.BORDER_LIMIT) {
+            this.vel.z = abs(this.vel.z);
+        }
+        if (this.pos.z > height - boidsSettings.BORDER_LIMIT) {
+            this.vel.z = -abs(this.vel.z);
         }
         return steering;
     };
@@ -244,44 +256,57 @@ function Bird(id, pos, vel) {
         const angle = ORD.angleBetween(this.vel);
         noStroke();
         push();
-        translate(this.pos.x, this.pos.y);
+        let screenPos = this.pos.copy();
+        screenPos.x -= width/2;
+        screenPos.y -= height/2;
+        screenPos.z -= depth/2;
+        translate(screenPos);
         noFill();
 
-        if (this.id === birds[0].id) {
-            birds.forEach(b => b.marked = false);
-            if (boidsSettings.enableShowPerception) {
-                if (boidsSettings.enableAlignment) {
-                    this.alignmentFriends.forEach(id => birds[id].marked = true);
-                    strokeWeight(3);
-                    stroke('green');
-                    circle(0, 0, boidsSettings.ALIGNMENT_FRIENDS_RADIUS*2);
-                }
-                if (boidsSettings.enableSeparation) {
-                    this.separationFriends.forEach(id => birds[id].marked = true);
-                    strokeWeight(2);
-                    stroke('red');
-                    circle(0, 0, boidsSettings.SEPARATION_FRIENDS_RADIUS*2);
-                }
-                if (boidsSettings.enableCohesion) {
-                    this.cohesionFriends.forEach(id => birds[id].marked = true);
-                    strokeWeight(1);
-                    stroke('blue');
-                    circle(0, 0, boidsSettings.COHESION_FRIENDS_RADIUS*2);
-                }
-            }
-        }
+        /*
+         * if (this.id === birds[0].id) {
+         *     birds.forEach(b => b.marked = false);
+         *     if (boidsSettings.enableShowPerception) {
+         *         if (boidsSettings.enableAlignment) {
+         *             this.alignmentFriends.forEach(id => birds[id].marked = true);
+         *             strokeWeight(3);
+         *             stroke('green');
+         *             circle(0, 0, boidsSettings.ALIGNMENT_FRIENDS_RADIUS*2);
+         *         }
+         *         if (boidsSettings.enableSeparation) {
+         *             this.separationFriends.forEach(id => birds[id].marked = true);
+         *             strokeWeight(2);
+         *             stroke('red');
+         *             circle(0, 0, boidsSettings.SEPARATION_FRIENDS_RADIUS*2);
+         *         }
+         *         if (boidsSettings.enableCohesion) {
+         *             this.cohesionFriends.forEach(id => birds[id].marked = true);
+         *             strokeWeight(1);
+         *             stroke('blue');
+         *             circle(0, 0, boidsSettings.COHESION_FRIENDS_RADIUS*2);
+         *         }
+         *     }
+         * }
+         * noStroke();
+         */
 
-        noStroke();
-        rotate(angle);
-        fill(255);
+        const col = color(
+            map(this.pos.x, 0, depth, 0, 255),
+            map(this.pos.y, 0, depth, 0, 255),
+            map(this.pos.z, 0, depth, 0, 255),
+        );
+        fill(col);
         if (this.marked) {
             fill('red');
         }
-        if (boidsSettings.enableRoundShape) {
-            ellipse(0, 0, this.r/2);
-        } else {
-            triangle(0, this.r, -this.r/3, 0, this.r/3, 0);
-        }
+        sphere(this.r);
+        /*
+         * if (boidsSettings.enableRoundShape) {
+         *     ellipse(0, 0, this.r/2);
+         * } else {
+         *     triangle(0, this.r, -this.r/3, 0, this.r/3, 0);
+         * }
+         */
         pop();
     };
 }

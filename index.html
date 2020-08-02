@@ -19,6 +19,20 @@
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-fonts@1.1.1/fonts/inter.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+<style>
+div.boids button.active {
+    background: #38b57e;
+}
+
+div.boids button.inactive {
+    background: #d37676;
+}
+
+div.boids tr.settings-table-values td {
+    vertical-align: top;
+    text-align: center;
+}
+</style>
     </head>
     <body>
         <div class="boids" id="boidsApp">
@@ -101,6 +115,26 @@
                                 <p>Intensity <span id="cohesionIntensityMarker">{{COHESION_ACC_INTENSITY}}</span>N</p>
                                 <input type="range" min="0" max="5" v-model.number="COHESION_ACC_INTENSITY" step="0.1" class="slider" id="cohesionIntensitySlider">
                             </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <table>
+                    <tr>
+                        <th>Angle X {{cameraSettings.angleX}}</th>
+                        <th>Angle Y {{cameraSettings.angleY}}</th>
+                        <th>Angle Z {{cameraSettings.angleZ}}</th>
+                    </tr>
+                    <tr class="settings-table-values">
+                        <td>
+                            <input type="range" min="0" max="360" v-model.number="cameraSettings.angleX" step="1" class="slider">
+                        </td>
+                        <td>
+                            <input type="range" min="0" max="360" v-model.number="cameraSettings.angleY" step="1" class="slider">
+                        </td>
+                        <td>
+                            <input type="range" min="0" max="360" v-model.number="cameraSettings.angleZ" step="1" class="slider">
                         </td>
                     </tr>
                 </table>

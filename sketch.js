@@ -13,6 +13,8 @@ let predatorsCreationTimer=0;
 
 let ORD;
 let app;
+let depth=400;
+
 
 let boidsSettings = {
     enableWiggle: true,
@@ -23,7 +25,7 @@ let boidsSettings = {
     enableCohesion: true,
 
     enableFollowMouse: false,
-    enableFollowTarget: true,
+    enableFollowTarget: false,
 
     enableWrapEdges: true,
     enableShowPerception: false,
@@ -51,6 +53,12 @@ let boidsSettings = {
     MAX_ACC: 1,
     MAX_SPEED: 3,
     BORDER_LIMIT: 20,
+
+    cameraSettings: {
+        angleX: 0,
+        angleY: 0,
+        angleZ: 0
+    }
 }
 
 let targetsSettings = {
@@ -82,15 +90,17 @@ function resetBirds() {
         // Random initial position
         const x = random(0, width);
         const y = random(0, height);
-        const pos = new p5.Vector(x, y);
+        const z = random(0, depth);
+        const pos = new p5.Vector(x, y, z);
 
         const dx = random(-1, 1);
         const dy = random(-1, 1);
+        const dz = random(-1, 1);
 
         // Constant initial velocity
         // const vel = new p5.Vector(1, 0).normalize();
         // Random initial velocity
-        const vel = new p5.Vector(dx, dy).normalize();
+        const vel = new p5.Vector(dx, dy, dz).normalize();
 
         birds.push(new Bird(i, pos, vel));
     }
@@ -111,24 +121,49 @@ function setup() {
     resetBirds();
     resetObstacles();
 
-    for (let i=0; i<2; i++) {
-        const pos = new p5.Vector(random(0, width), random(0, height));
-        predators.push(new Predator(i, pos, 30));
-    }
+    /*
+     * for (let i=0; i<2; i++) {
+     *     const pos = new p5.Vector(random(0, width), random(0, height));
+     *     predators.push(new Predator(i, pos, 30));
+     * }
+     */
 
-    for (let i=0; i<width; i+=30) {
-        const p1 = new p5.Vector(i, 0);
-        const obstacle1 = new Obstacle(obstacles.length, p1, 30);
-        obstacles.push(obstacle1);
-
-        const p2 = new p5.Vector(i, height);
-        const obstacle2 = new Obstacle(obstacles.length, p2, 30);
-        obstacles.push(obstacle2);
-    }
+/*
+ *     for (let i=0; i<width; i+=30) {
+ *         const p1 = new p5.Vector(i, 0);
+ *         const obstacle1 = new Obstacle(obstacles.length, p1, 30);
+ *         obstacles.push(obstacle1);
+ * 
+ *         const p2 = new p5.Vector(i, height);
+ *         const obstacle2 = new Obstacle(obstacles.length, p2, 30);
+ *         obstacles.push(obstacle2);
+ *     }
+ */
 }
 
+let angle = 0;
 function draw() {
     background(0, 0, 0);
+
+    camera(0, 0, (height) / tan(PI*30.0 / 180.0), 0, 0, 0, 0, 1, 0);
+    rotateX(radians(boidsSettings.cameraSettings.angleX));
+    rotateY(radians(boidsSettings.cameraSettings.angleY));
+    rotateZ(radians(boidsSettings.cameraSettings.angleZ));
+
+    push();
+    stroke('green');
+    line(0, 0, width/2, 0);
+    rotateZ(radians(90));
+    stroke('blue');
+    line(0, 0, height/2, 0);
+    rotateY(-radians(90));
+    stroke('red');
+    line(0, 0, depth/2, 0);
+    pop();
+
+    noFill();
+    stroke(150);
+    box(width, height, depth);
 
     const boundaries = new Rectangle(0, 0, width, height);
     const capacity = 4;
