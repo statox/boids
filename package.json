@@ -1,0 +1,21 @@
+{
+  "name": "boids",
+  "version": "1.0.0",
+  "description": "My implementation of Craig Renolds' Boids",
+  "scripts": {
+    "dev": "npx light-server -s . -w \"**/*\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/statox/boids.git"
+  },
+  "author": "me@statox.fr",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/statox/boids/issues"
+  },
+  "homepage": "https://github.com/statox/boids#readme",
+  "devDependencies": {
+    "light-server": "^2.8.0"
+  }
+}

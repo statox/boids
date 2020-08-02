@@ -102,7 +102,7 @@ function setup() {
     });
 
     // Create the canvas and put it in its div
-    const myCanvas = createCanvas(10, 10);
+    const myCanvas = createCanvas(10, 10, WEBGL);
     customResizeCanvas();
     myCanvas.parent("canvasDiv");
     ORD = new p5.Vector(0, 1);
