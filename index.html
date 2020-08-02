@@ -1,0 +1,137 @@
+<!--
+    - Resources I used
+    -
+    - https://en.wikipedia.org/wiki/Boids
+    - http://www.vergenet.net/~conrad/boids/pseudocode.html
+    - https://github.com/jackaperkins/boids
+    - https://www.raymondcamden.com/2020/04/03/quick-tip-on-using-vue-with-eleventy
+    -
+-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>boids</title>
+        <meta name="description" content="My implementation of Craig Renolds' Boids">
+        <meta name="keywords" content="statox boids">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-fonts@1.1.1/fonts/inter.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+    </head>
+    <body>
+        <div class="boids" id="boidsApp">
+            <div>
+                <label>Flock population</label>
+                <input id="flockSizeInput" type="number" v-model.number="CROWD_SIZE">
+                <button id="flockSizeBtn" onclick="resetBirds()">Reset flock</button>
+                <button id="flockSizeBtn" onclick="resetObstacles()">Reset obstacles</button>
+            </div>
+            <div>
+                <table>
+                    <tr>
+                        <td>
+                            <button v-bind:class="{active: enableFollowMouse, inactive: !enableFollowMouse}" id="followMouseButton">Follow mouse</button>
+                        </td>
+                        <td>
+                            <button v-bind:class="{active: enableFollowTarget, inactive: !enableFollowTarget}" id="followTargetButton">Follow target</button>
+                        </td>
+                        <td>
+                            <button v-bind:class="{active: enableWrapEdges, inactive: !enableWrapEdges}" id="wrapEdgesButton">Edge wrapping</button>
+                        </td>
+                        <td>
+                            <button v-bind:class="{active: enableShowPerception, inactive: !enableShowPerception}" id="showPerceptionCirclesButton">Show perception</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <table>
+                    <tr>
+                        <th>Wiggling</th>
+                        <th>Alignement</th>
+                        <th>Separation</th>
+                        <th>Cohesion</th>
+                    </tr>
+                    <tr class="settings-table-values">
+                        <td>
+                            <div>
+                                <button v-bind:class="{active: enableWiggle, inactive: !enableWiggle}" id="toggleWiggleButton">Toggle wiggling</button>
+
+                                <p>Allowed angle <span id="wiggleAngleMarker">{{MAX_WIGGLE_ANGLE}}</span></p>
+                                <input type="range" min="0" max="180" v-model.number="MAX_WIGGLE_ANGLE" step="0.5" class="slider" id="wiggleAngleSlider">
+
+                                <p>Intensity <span id="wiggleIntensityeMarker">{{WIGGLE_ACC_INTENSITY}}</span></p>
+                                <input type="range" min="0" max="5" v-model.number="WIGGLE_ACC_INTENSITY" step="0.1" class="slider" id="wiggleIntensitySlider">
+
+                                <p>Max velocity <span id="maxSpeedMarker">{{MAX_SPEED}}</span></p>
+                                <input type="range" min="0" max="20" v-model.number="MAX_SPEED" step="0.1" class="slider" id="boidSpeedSlider">
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <button v-bind:class="{active: enableAlignment, inactive: !enableAlignment}" id="toggleAlignmentButton">Toggle alignment</button>
+
+                                <p>Perception distance <span id="alignmentPerceptionMarker">{{ALIGNMENT_FRIENDS_RADIUS}}</span>px</p>
+                                <input type="range" min="1" max="500" v-model.number="ALIGNMENT_FRIENDS_RADIUS" class="slider" id="alignementPerceptionDistanceSlider">
+
+                                <p>Intensity <span id="alignmentIntensityMarker">{{ALIGNMENT_ACC_INTENSITY}}</span>N</p>
+                                <input type="range" min="0" max="5" v-model.number="ALIGNMENT_ACC_INTENSITY" step="0.1" class="slider" id="alignementIntensitySlider">
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <button v-bind:class="{active: enableSeparation, inactive: !enableSeparation}" id="toggleSeparationButton">Toggle separation</button>
+
+                                <p>Perception distance <span id="separationPerceptionMarker">{{SEPARATION_FRIENDS_RADIUS}}</span>px</p>
+                                <input type="range" min="1" max="500" v-model.number="SEPARATION_FRIENDS_RADIUS" class="slider" id="separationPerceptionDistanceSlider">
+
+                                <p>Intensity <span id="separationIntensityMarker">{{SEPARATION_ACC_INTENSITY}}</span>N</p>
+                                <input type="range" min="0" max="5" v-model.number="SEPARATION_ACC_INTENSITY" step="0.1" class="slider" id="separationIntensitySlider">
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <button v-bind:class="{active: enableCohesion, inactive: !enableCohesion}" id="toggleCohesionButton">Toggle cohesion</button>
+
+                                <p>Perception distance <span id="cohesionPerceptionMarker">{{COHESION_FRIENDS_RADIUS}}</span>px</p>
+                                <input type="range" min="1" max="500" v-model.number="COHESION_FRIENDS_RADIUS" class="slider" id="cohesionPerceptionDistanceSlider">
+
+                                <p>Intensity <span id="cohesionIntensityMarker">{{COHESION_ACC_INTENSITY}}</span>N</p>
+                                <input type="range" min="0" max="5" v-model.number="COHESION_ACC_INTENSITY" step="0.1" class="slider" id="cohesionIntensitySlider">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div oncontextmenu="return false;" id="canvasDiv"></div>
+            <div>
+                <table>
+                    <tr>
+                        <td>
+                            <button v-bind:class="{active: enableRoundShape, inactive: !enableRoundShape}" id="changeShapeButton">Change shape</button>
+                        </td>
+                        <td>
+                            <button v-bind:class="{active: enableObstaclesDrawing, inactive: !enableObstaclesDrawing}" id="obstaclesDrawingButton">Obstacles</button>
+                        </td>
+                        <td>
+                            <button v-bind:class="{active: enablePredatorDrawing, inactive: !enablePredatorDrawing}" id="predatorDrawingButton">Predators</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/CodingTrain/QuadTree/quadtree.js"></script>
+    <script src="sketch.js"></script>
+    <script src="Interface.js"></script>
+    <script src="Bird.js"></script>
+    <script src="Predator.js"></script>
+    <script src="Target.js"></script>
+    <script src="Obstacle.js"></script>
+    <script src="utils.js"></script>
+</html>
